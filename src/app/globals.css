@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-bg-hover: rgba(255, 255, 255, 0.13);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-blur: 24px;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+
+  --color-bg-start: #0A0A1A;
+  --color-bg-mid: #0D1B3E;
+  --color-bg-end: #0A2647;
+
+  --color-cyan: #00D4FF;
+  --color-text: #FFFFFF;
+  --color-text-muted: rgba(255, 255, 255, 0.65);
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-start),
+    var(--color-bg-mid),
+    var(--color-bg-end)
+  );
+  color: var(--color-text);
+}
+
+.glass {
+  backdrop-filter: blur(var(--glass-blur));
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 24px;
+  transition: background 0.2s ease;
+}
+
+.glass:hover {
+  background: var(--glass-bg-hover);
+}
+
+button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 2px;
+}
