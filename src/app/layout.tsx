@@ -1,31 +1,29 @@
 import './globals.css'
-import { Inter } from 'next/font/google'
-import Providers from './providers'
+import { Inter, Great_Vibes } from 'next/font/google'
+import type { Metadata } from 'next'
 
-const inter = Inter({ subsets: ['latin'], display: 'swap' })
+const inter = Inter({ subsets: ['latin'] })
 
-export const metadata = {
+const greatVibes = Great_Vibes({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-cursive'
+})
+
+export const metadata: Metadata = {
   title: 'ClearSpeak — Communication Without Barriers',
-  description:
-    'Assistive communication web app for deaf and hard-of-hearing users',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5'
+  description: 'Assistive communication web app',
 }
 
 export default function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-black text-white px-4 py-2 rounded"
-        >
-          Skip to main content
-        </a>
-        <Providers>{children}</Providers>
+      <body className={`${inter.className} ${greatVibes.variable}`}>
+        {children}
       </body>
     </html>
   )

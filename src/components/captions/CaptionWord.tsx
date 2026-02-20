@@ -2,13 +2,21 @@
 
 import { motion } from 'framer-motion'
 
-export default function CaptionWord({ word }: { word: string }) {
+export default function CaptionWord({
+  word,
+  isLatest,
+}: {
+  word: string
+  isLatest?: boolean
+}) {
   return (
     <motion.span
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="inline-block mr-2"
+      className={`inline-block mr-2 ${
+        isLatest ? 'text-blue-600 drop-shadow-md' : ''
+      }`}
     >
       {word}
     </motion.span>

@@ -18,6 +18,10 @@ export default function Sidebar() {
         <Link href="/quick-reply" className="flex items-center gap-2">
           <MessageCircle size={18} /> Quick Reply
         </Link>
+        <Link href="/transcripts" className="flex items-center gap-2">
+          <MessageCircle size={18} />
+          Transcripts
+        </Link>
         <Link href="/settings" className="flex items-center gap-2">
           <Settings size={18} /> Settings
         </Link>

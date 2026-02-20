@@ -2,20 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-type SpeechRecognitionType =
-  typeof window extends undefined
-    ? never
-    : typeof window & {
-        webkitSpeechRecognition: any
-        SpeechRecognition: any
-      }
-
 export function useSpeechRecognition() {
   const [isListening, setIsListening] = useState(false)
-  const [transcript, setTranscript] = useState('')
+  const [finalTranscript, setFinalTranscript] = useState('')
+  const [interimTranscript, setInterimTranscript] = useState('')
   const [isSupported, setIsSupported] = useState(true)
 
   const recognitionRef = useRef<any>(null)
+  const finalTranscriptRef = useRef('')
+  const shouldBeListeningRef = useRef(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -35,18 +30,33 @@ export function useSpeechRecognition() {
     recognition.lang = 'en-US'
 
     recognition.onresult = (event: any) => {
-      let interimTranscript = ''
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        interimTranscript += event.results[i][0].transcript
-      }
-      setTranscript(interimTranscript)
-    }
+      let interim = ''
+      let accumulated = finalTranscriptRef.current
 
-    recognition.onerror = () => {
-      setIsListening(false)
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript
+
+        if (event.results[i].isFinal) {
+          accumulated += transcript + ' '
+        } else {
+          interim += transcript
+        }
+      }
+
+      finalTranscriptRef.current = accumulated
+      setFinalTranscript(accumulated)
+      setInterimTranscript(interim)
     }
 
     recognition.onend = () => {
+      if (shouldBeListeningRef.current) {
+        recognition.start()
+      } else {
+        setIsListening(false)
+      }
+    }
+
+    recognition.onerror = () => {
       setIsListening(false)
     }
 
@@ -59,19 +69,27 @@ export function useSpeechRecognition() {
 
   const startListening = () => {
     if (!recognitionRef.current) return
-    setTranscript('')
+
+    finalTranscriptRef.current = ''
+    setFinalTranscript('')
+    setInterimTranscript('')
+    shouldBeListeningRef.current = true
+
     recognitionRef.current.start()
     setIsListening(true)
   }
 
   const stopListening = () => {
     if (!recognitionRef.current) return
+
+    shouldBeListeningRef.current = false
     recognitionRef.current.stop()
     setIsListening(false)
   }
 
   return {
-    transcript,
+    transcript: finalTranscript + interimTranscript,
+    finalTranscript,
     isListening,
     isSupported,
     startListening,
