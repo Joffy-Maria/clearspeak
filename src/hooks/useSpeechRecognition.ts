@@ -36,10 +36,21 @@ export function useSpeechRecognition() {
       let sessionFinal = ''
 
       for (let i = 0; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript
+        const result = event.results[i]
+        const transcript = result[0].transcript
+        const cleanTranscript = transcript.trim().toLowerCase()
 
-        if (event.results[i].isFinal) {
-          sessionFinal += transcript + ' '
+        if (result.isFinal) {
+          if (cleanTranscript) {
+            const currentTotal = previousSessionsRef.current + sessionFinal
+            const totalPadded = ' ' + currentTotal.trim().toLowerCase() + ' '
+            const targetPadded = ' ' + cleanTranscript + ' '
+
+            // Advanced Deduplication: prevent Android from repeating the last word/phrase
+            if (!totalPadded.endsWith(targetPadded)) {
+              sessionFinal += transcript + ' '
+            }
+          }
         } else {
           interim += transcript
         }
