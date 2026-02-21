@@ -11,14 +11,18 @@ export default function TranscriptsPage() {
   useEffect(() => {
     const load = async () => {
       const data = await getAllTranscripts()
-      setSessions(data.reverse())
+      if (data) {
+        setSessions(data.slice().reverse())
+      }
     }
     load()
   }, [])
 
   const handleDelete = async (id: string) => {
     await deleteTranscript(id)
-    setSessions(prev => prev.filter(session => session.id !== id))
+    setSessions(prev =>
+      prev.filter(session => session.id !== id)
+    )
   }
 
   return (
@@ -37,7 +41,9 @@ export default function TranscriptsPage() {
           >
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-semibold">{session.autoTag}</p>
+                <p className="font-semibold">
+                  Transcript ({session.wordCount} words)
+                </p>
                 <p className="text-sm opacity-60">
                   {new Date(session.date).toLocaleString()}
                 </p>
@@ -55,7 +61,7 @@ export default function TranscriptsPage() {
               Duration: {session.duration}s • Words: {session.wordCount}
             </p>
 
-            <p className="opacity-80">
+            <p className="opacity-80 whitespace-pre-wrap">
               {session.content}
             </p>
           </div>

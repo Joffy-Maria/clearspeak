@@ -1,20 +1,15 @@
 'use client'
 
-import { dbPromise } from '../lib/db'
+import { getDB } from '../lib/db'
 import { v4 as uuidv4 } from 'uuid'
-
-/* -------------------- Types -------------------- */
 
 export type TranscriptSession = {
   id: string
   date: number
   duration: number
   wordCount: number
-  autoTag: string
   content: string
 }
-
-/* -------------------- Auto Tag Logic -------------------- */
 
 function autoTag(content: string): string {
   const text = content.toLowerCase()
@@ -34,43 +29,43 @@ function autoTag(content: string): string {
   return 'Conversation'
 }
 
-/* -------------------- Hook -------------------- */
-
 export function useTranscripts() {
-  /* Save Transcript */
   const saveTranscript = async (
     content: string,
     duration: number
-  ): Promise<void> => {
-    const db = await dbPromise
+  ) => {
+    const db = getDB()
+    if (!db) return
 
     const wordCount =
-      content.trim().length === 0
-        ? 0
-        : content.trim().split(/\s+/).length
+      content.trim().split(/\s+/).length
 
     const session: TranscriptSession = {
       id: uuidv4(),
       date: Date.now(),
       duration,
       wordCount,
-      autoTag: autoTag(content),
       content,
     }
 
-    await db.put('transcripts', session)
+    const database = await db
+    await database.put('transcripts', session)
   }
 
-  /* Get All Transcripts */
-  const getAllTranscripts = async (): Promise<TranscriptSession[]> => {
-    const db = await dbPromise
-    return (await db.getAll('transcripts')) as TranscriptSession[]
+  const getAllTranscripts = async () => {
+    const db = getDB()
+    if (!db) return []
+
+    const database = await db
+    return await database.getAll('transcripts')
   }
 
-  /* Delete Transcript */
-  const deleteTranscript = async (id: string): Promise<void> => {
-    const db = await dbPromise
-    await db.delete('transcripts', id)
+  const deleteTranscript = async (id: string) => {
+    const db = getDB()
+    if (!db) return
+
+    const database = await db
+    await database.delete('transcripts', id)
   }
 
   return {

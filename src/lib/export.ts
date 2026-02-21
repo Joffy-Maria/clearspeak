@@ -2,20 +2,25 @@
 
 import { TranscriptSession } from '../hooks/useTranscripts'
 
-export function exportTranscriptAsTXT(session: TranscriptSession) {
+export function exportTranscriptAsTXT(
+  session: TranscriptSession
+) {
   const textContent = `
 ClearSpeak Transcript
+---------------------
 Date: ${new Date(session.date).toLocaleString()}
 Duration: ${session.duration}s
 Words: ${session.wordCount}
-Tag: ${session.autoTag}
 
--------------------------
+---------------------
 
 ${session.content}
 `
 
-  const blob = new Blob([textContent], { type: 'text/plain' })
+  const blob = new Blob([textContent], {
+    type: 'text/plain',
+  })
+
   const url = URL.createObjectURL(blob)
 
   const link = document.createElement('a')

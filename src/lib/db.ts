@@ -1,26 +1,23 @@
-'use client'
+import { openDB, IDBPDatabase } from 'idb'
 
-import { openDB, DBSchema } from 'idb'
+let dbPromise: Promise<IDBPDatabase> | null = null
 
-interface ClearSpeakDB extends DBSchema {
-  transcripts: {
-    key: string
-    value: {
-      id: string
-      date: number
-      duration: number
-      wordCount: number
-      content: string
-    }
+export function getDB() {
+  if (typeof window === 'undefined') {
+    return null
   }
-}
 
-export const dbPromise = openDB<ClearSpeakDB>('ClearSpeakDB', 1, {
-  upgrade(db) {
-    if (!db.objectStoreNames.contains('transcripts')) {
-      db.createObjectStore('transcripts', {
-        keyPath: 'id',
-      })
-    }
-  },
-})
+  if (!dbPromise) {
+    dbPromise = openDB('ClearSpeakDB', 1, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('transcripts')) {
+          db.createObjectStore('transcripts', {
+            keyPath: 'id',
+          })
+        }
+      },
+    })
+  }
+
+  return dbPromise
+}
