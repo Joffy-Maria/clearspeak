@@ -2,105 +2,104 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-export function useSoundDetector() {
-  const [isActive, setIsActive] = useState(false)
-  const [volume, setVolume] = useState(0)
-  const [alertTriggered, setAlertTriggered] = useState(false)
-  const [isSupported, setIsSupported] = useState(true)
+type SoundEvent = {
+  label: string
+  confidence: number
+  severity: 'danger' | 'attention' | 'info'
+}
 
-  const audioContextRef = useRef<AudioContext | null>(null)
-  const analyserRef = useRef<AnalyserNode | null>(null)
-  const streamRef = useRef<MediaStream | null>(null)
-  const rafRef = useRef<number | null>(null)
-  const isActiveRef = useRef(false)
+export function useSoundClassifier(enabled: boolean) {
+  const recognizerRef = useRef<any>(null)
+  const cooldownRef = useRef<number>(0)
+  const isInitializingRef = useRef(false)
 
-  const threshold = 0.05
+  const [prediction, setPrediction] = useState<SoundEvent | null>(null)
+  const [isReady, setIsReady] = useState(false)
+
+  const mapSeverity = (label: string): 'danger' | 'attention' | 'info' => {
+    const danger = ['Fire Alarm', 'Glass Breaking', 'Siren']
+    const attention = ['Phone Ring', 'door bell']
+    const info = ['baby cry', 'dog bark', 'Clap']
+
+    if (danger.includes(label)) return 'danger'
+    if (attention.includes(label)) return 'attention'
+    return 'info'
+  }
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (!navigator.mediaDevices) {
-      setIsSupported(false)
-    }
-  }, [])
-
-  const detect = () => {
-    if (!analyserRef.current || !isActiveRef.current) return
-
-    const bufferLength = analyserRef.current.fftSize
-    const dataArray = new Uint8Array(bufferLength)
-
-    analyserRef.current.getByteTimeDomainData(dataArray)
-
-    let sum = 0
-    for (let i = 0; i < bufferLength; i++) {
-      const normalized = (dataArray[i] - 128) / 128
-      sum += normalized * normalized
+    if (!enabled) {
+      recognizerRef.current?.stopListening()
+      setIsReady(false)
+      return
     }
 
-    const rms = Math.sqrt(sum / bufferLength)
-    setVolume(rms)
+    if (isInitializingRef.current) return
+    isInitializingRef.current = true
 
-    if (rms > threshold) {
-      setAlertTriggered(true)
-      navigator.vibrate?.([200, 100, 200])
-      setTimeout(() => setAlertTriggered(false), 500)
+    const start = async () => {
+      try {
+        console.log('Requesting mic...')
+        await navigator.mediaDevices.getUserMedia({ audio: true })
+
+        console.log('Loading speech model...')
+        const speechCommands = await import('@tensorflow-models/speech-commands')
+
+        const recognizer = speechCommands.create(
+          'BROWSER_FFT',
+          undefined,
+          '/models/audio_model/model.json',
+          '/models/audio_model/metadata.json'
+        )
+
+        await recognizer.ensureModelLoaded()
+        console.log('Model ready.')
+
+        recognizerRef.current = recognizer
+        setIsReady(true)
+
+        recognizer.listen(
+          async (result: any): Promise<void> => {
+            const scores = Array.from(result.scores as Float32Array)
+            const labels = recognizer.wordLabels()
+
+            const maxScore = Math.max(...scores)
+            const maxIndex = scores.indexOf(maxScore)
+            const label = labels[maxIndex]
+
+            const now = Date.now()
+
+            if (
+              label !== 'Background Noise' &&
+              maxScore > 0.6 &&
+              now - cooldownRef.current > 3000
+            ) {
+              cooldownRef.current = now
+
+              console.log('Detected:', label)
+
+              setPrediction({
+                label,
+                confidence: maxScore,
+                severity: mapSeverity(label),
+              })
+            }
+          },
+          {
+            probabilityThreshold: 0.6,
+            overlapFactor: 0.5,
+          }
+        )
+      } catch (err) {
+        console.error('Classifier error:', err)
+      }
     }
 
-    rafRef.current = requestAnimationFrame(detect)
-  }
+    start()
 
-  const start = async () => {
-    if (!navigator.mediaDevices) return
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      })
-
-      const audioContext = new AudioContext()
-      await audioContext.resume() // IMPORTANT
-
-      const analyser = audioContext.createAnalyser()
-      analyser.fftSize = 1024
-
-      const microphone =
-        audioContext.createMediaStreamSource(stream)
-
-      microphone.connect(analyser)
-
-      streamRef.current = stream
-      audioContextRef.current = audioContext
-      analyserRef.current = analyser
-
-      isActiveRef.current = true
-      setIsActive(true)
-
-      detect()
-    } catch (err) {
-      console.error('Microphone error:', err)
+    return () => {
+      recognizerRef.current?.stopListening()
     }
-  }
+  }, [enabled])
 
-  const stop = () => {
-    isActiveRef.current = false
-    setIsActive(false)
-    setVolume(0)
-    setAlertTriggered(false)
-
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current)
-    }
-
-    streamRef.current?.getTracks().forEach(track => track.stop())
-    audioContextRef.current?.close()
-  }
-
-  return {
-    isActive,
-    isSupported,
-    volume,
-    alertTriggered,
-    start,
-    stop,
-  }
+  return { prediction, isReady }
 }

@@ -51,3 +51,18 @@ button {
   outline: 2px solid var(--color-cyan);
   outline-offset: 2px;
 }
+.text-normal {
+  font-size: 16px;
+}
+
+.text-large {
+  font-size: 18px;
+}
+
+.text-xlarge {
+  font-size: 22px;
+}
+
+.high-contrast {
+  filter: contrast(1.3);
+}

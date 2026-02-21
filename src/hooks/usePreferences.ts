@@ -1,22 +1,55 @@
 'use client'
 
-import { useEffect } from 'react'
-import { usePreferencesStore } from '../stores/preferencesStore'
+import { useEffect, useState } from 'react'
+
+export type Preferences = {
+  fontSize: 'normal' | 'large' | 'xlarge'
+  highContrast: boolean
+  language: string
+  ttsRate: number
+  masterSoundEnabled: boolean
+  soundDetectionEnabled: boolean
+}
+
+const defaultPreferences: Preferences = {
+  fontSize: 'normal',
+  highContrast: false,
+  language: 'en-US',
+  ttsRate: 1,
+  masterSoundEnabled: true,
+  soundDetectionEnabled: false,
+}
 
 export function usePreferences() {
-  const store = usePreferencesStore()
+  const [preferences, setPreferences] =
+    useState<Preferences>(defaultPreferences)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('clearspeak_preferences')
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        Object.entries(parsed).forEach(([key, value]) => {
-          store.setPreference(key as any, value as any)
-        })
-      }
+    const stored = localStorage.getItem('clearspeak_preferences')
+    if (stored) {
+      setPreferences(JSON.parse(stored))
     }
   }, [])
 
-  return store
+  useEffect(() => {
+    localStorage.setItem(
+      'clearspeak_preferences',
+      JSON.stringify(preferences)
+    )
+
+    // Apply font size globally
+    const root = document.documentElement
+
+    root.classList.remove('text-normal', 'text-large', 'text-xlarge')
+
+    root.classList.add(`text-${preferences.fontSize}`)
+
+    if (preferences.highContrast) {
+      root.classList.add('high-contrast')
+    } else {
+      root.classList.remove('high-contrast')
+    }
+  }, [preferences])
+
+  return { preferences, setPreferences }
 }
