@@ -39,12 +39,12 @@ function Intro() {
       className="relative flex flex-col items-center justify-center h-screen overflow-hidden"
     >
       {/* Floating Gradient Background Orbs */}
-      <div className="absolute w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-pink-400/30 rounded-full blur-3xl animate-pulse -top-20 md:-top-40 -left-20 md:-left-40"></div>
-      <div className="absolute w-[250px] md:w-[500px] h-[250px] md:h-[500px] bg-blue-400/30 rounded-full blur-3xl animate-pulse bottom-0 right-0"></div>
+      <div className="absolute w-[600px] h-[600px] bg-pink-400/30 rounded-full blur-3xl animate-pulse -top-40 -left-40"></div>
+      <div className="absolute w-[500px] h-[500px] bg-blue-400/30 rounded-full blur-3xl animate-pulse bottom-0 right-0"></div>
 
       {/* Animated Title */}
       <motion.div
-        className="text-6xl md:text-9xl font-extrabold tracking-tight text-center"
+        className="text-8xl md:text-9xl font-extrabold tracking-tight text-center"
         initial="hidden"
         animate="show"
         variants={{
@@ -122,14 +122,14 @@ function Dashboard() {
   ]
 
   return (
-    <div className="space-y-10 md:space-y-20 py-10 md:py-24 relative">
+    <div className="space-y-20 py-24 relative">
 
       {/* Pretty Dashboard Title */}
       <motion.h1
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1 }}
-        className="text-center text-6xl md:text-8xl font-[var(--font-cursive)] bg-gradient-to-r from-pink-600 via-blue-600 to-green-500 bg-clip-text text-transparent drop-shadow-2xl px-4"
+        className="text-center text-8xl font-[var(--font-cursive)] bg-gradient-to-r from-pink-600 via-blue-600 to-green-500 bg-clip-text text-transparent drop-shadow-2xl"
       >
         Dashboard
       </motion.h1>
@@ -146,7 +146,7 @@ function Dashboard() {
             <motion.div
               whileHover={{ scale: 1.05 }}
               transition={{ type: 'spring', stiffness: 180 }}
-              className="relative backdrop-blur-xl bg-white/60 border border-white/50 shadow-2xl rounded-[30px] md:rounded-[40px] p-8 md:p-14 text-center cursor-pointer overflow-hidden mx-4 md:mx-0"
+              className="relative backdrop-blur-xl bg-white/60 border border-white/50 shadow-2xl rounded-[40px] p-14 text-center cursor-pointer overflow-hidden"
             >
               {/* Glow background */}
               <div className={`absolute inset-0 bg-gradient-to-r ${section.gradient} opacity-10 blur-2xl`} />

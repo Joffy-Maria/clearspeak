@@ -10,6 +10,8 @@ export function useSpeechRecognition() {
 
   const recognitionRef = useRef<any>(null)
   const finalTranscriptRef = useRef('')
+  const previousSessionsRef = useRef('')
+  const currentSessionRef = useRef('')
   const shouldBeListeningRef = useRef(false)
 
   useEffect(() => {
@@ -31,26 +33,36 @@ export function useSpeechRecognition() {
 
     recognition.onresult = (event: any) => {
       let interim = ''
-      let accumulated = finalTranscriptRef.current
+      let sessionFinal = ''
 
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      for (let i = 0; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript
 
         if (event.results[i].isFinal) {
-          accumulated += transcript + ' '
+          sessionFinal += transcript + ' '
         } else {
           interim += transcript
         }
       }
 
-      finalTranscriptRef.current = accumulated
-      setFinalTranscript(accumulated)
+      currentSessionRef.current = sessionFinal
+      const totalFinal = previousSessionsRef.current + sessionFinal
+
+      finalTranscriptRef.current = totalFinal
+      setFinalTranscript(totalFinal)
       setInterimTranscript(interim)
     }
 
     recognition.onend = () => {
+      previousSessionsRef.current += currentSessionRef.current
+      currentSessionRef.current = ''
+
       if (shouldBeListeningRef.current) {
-        recognition.start()
+        try {
+          recognition.start()
+        } catch (e) {
+          // Ignore start errors if already started
+        }
       } else {
         setIsListening(false)
       }
@@ -70,13 +82,20 @@ export function useSpeechRecognition() {
   const startListening = () => {
     if (!recognitionRef.current) return
 
+    previousSessionsRef.current = ''
+    currentSessionRef.current = ''
     finalTranscriptRef.current = ''
     setFinalTranscript('')
     setInterimTranscript('')
     shouldBeListeningRef.current = true
 
-    recognitionRef.current.start()
-    setIsListening(true)
+    try {
+      recognitionRef.current.start()
+      setIsListening(true)
+    } catch (e) {
+      // Ignore if it's already started
+      setIsListening(true)
+    }
   }
 
   const stopListening = () => {
