@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export type Preferences = {
   fontSize: 'normal' | 'large' | 'xlarge'
@@ -8,7 +8,6 @@ export type Preferences = {
   language: string
   ttsRate: number
   masterSoundEnabled: boolean
-  soundDetectionEnabled: boolean
 }
 
 const defaultPreferences: Preferences = {
@@ -17,7 +16,6 @@ const defaultPreferences: Preferences = {
   language: 'en-US',
   ttsRate: 1,
   masterSoundEnabled: true,
-  soundDetectionEnabled: false,
 }
 
 export function usePreferences() {
@@ -37,11 +35,8 @@ export function usePreferences() {
       JSON.stringify(preferences)
     )
 
-    // Apply font size globally
     const root = document.documentElement
-
     root.classList.remove('text-normal', 'text-large', 'text-xlarge')
-
     root.classList.add(`text-${preferences.fontSize}`)
 
     if (preferences.highContrast) {

@@ -97,13 +97,7 @@ function Dashboard() {
       link: "/captions",
       gradient: "from-pink-500 via-purple-500 to-blue-500"
     },
-    {
-      title: "Sound Alerts",
-      subtitle: "Stay aware of your environment.",
-      emoji: "🔔",
-      link: "/sound-alerts",
-      gradient: "from-blue-500 via-cyan-500 to-green-500"
-    },
+    
     {
       title: "Quick Reply",
       subtitle: "Speak instantly with confidence.",
