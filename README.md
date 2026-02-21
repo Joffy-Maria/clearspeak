@@ -193,7 +193,7 @@ type TranscriptSession = {
 
 ---
 
-## AI Tools Used (Optional - For Transparency Bonus)
+## AI Tools Used 
 
 **Tool Used:** ChatGPT   
 
